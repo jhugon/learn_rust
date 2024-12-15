@@ -1,8 +1,8 @@
 use clap::Parser;
+use clap::ValueEnum;
 use patharg::OutputArg;
 use std::io::Write;
 use rand::prelude::*;
-use rand_distr::StandardNormal;
 
 /// Generate random numbers
 ///
@@ -16,14 +16,40 @@ struct Arguments {
     /// Number of samples to generate
     #[arg()]
     nsamples: u64,
+
+    /// Type of distribution
+    #[arg(value_enum)]
+    distribution: Distribution,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+enum Distribution {
+    /// Standard normal distribution
+    Normal,
+    /// Gaussian (standard normal) distribution
+    Gaussian,
+    /// Uniform distribution on [0,1)
+    Uniform,
+    /// Exponential distribution with scale parameter 1
+    Exponential,
 }
 
 fn main() -> std::io::Result<()> {
     let args = Arguments::parse();
     let mut outfile = args.outfile.create()?;
-    let dist = StandardNormal;
+
+    // Statistical distributions
+    let normal = rand_distr::StandardNormal;
+    let uniform = rand_distr::Uniform::new(0.,1.);
+    let exponential = rand_distr::Exp1;
+
     for _ in 0..args.nsamples {
-        let val: f64 = thread_rng().sample(dist);
+        let val: f64 = match args.distribution {
+            Distribution::Normal => thread_rng().sample(normal),
+            Distribution::Gaussian => thread_rng().sample(normal),
+            Distribution::Uniform => thread_rng().sample(uniform),
+            Distribution::Exponential => thread_rng().sample(exponential),
+        };
         writeln!(&mut outfile,"{}",val)?;
     }
     Ok(())
