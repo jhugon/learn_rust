@@ -12,7 +12,8 @@ struct Arguments {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut hist = Histogram::new(vec![0.,0.25,0.5,0.75,1.]);
+    //let mut hist = Histogram::new(vec![0.,0.25,0.5,0.75,1.]);
+    let mut hist = Histogram::new_even_bins(20,0.,1.);
 
     let args = Arguments::parse();
     for line in args.infile.lines()? {
@@ -36,8 +37,15 @@ struct Histogram {
 ///
 /// Bin edges include lower bound but not upper bound
 impl Histogram {
-    pub fn new(binedges: Vec<f32>) -> Self {
-        let nbins = binedges.len() - 1;
+    //pub fn new_arb_bins(binedges: Vec<f32>) -> Self {
+    //    let nbins = binedges.len() - 1;
+    //    let bincontent = vec![0;nbins];
+    //    Self{nbins,bincontent,binedges}
+    //}
+    pub fn new_even_bins(nbins: usize,xmin: f32, xmax: f32) -> Self {
+        let xwidth = xmax - xmin;
+        let xbinwidth: f32 = xwidth/nbins as f32;
+        let binedges = (0..nbins+1).map(|ibin| xmin + xbinwidth*ibin as f32).collect();
         let bincontent = vec![0;nbins];
         Self{nbins,bincontent,binedges}
     }
