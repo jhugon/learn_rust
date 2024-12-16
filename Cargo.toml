@@ -8,3 +8,4 @@ clap = { version = "4.5.23", features = ["derive"] }
 patharg = "0.4.0"
 rand = "0.8.5"
 rand_distr = "0.4.3"
+termsize = "0.1.9"
