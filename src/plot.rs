@@ -33,7 +33,7 @@ pub fn plot(xs: &[f32], ys: &[f32]) -> Result<(), Box<dyn Error>> {
     }
 
     let xbinwidth: f32 = xwidth/maxheight as f32;
-    let xbincenters: Vec<f32> = (0..maxheight)
+    let xbincenters: Vec<f32> = (0..maxheight+1)
                         .map(|ibin| xmin + (xbinwidth*(ibin as f32+0.5)))
                         .collect();
     let mut data_xbins: Vec<Vec<usize>> = vec![vec![];usize::try_from(maxheight+1).expect("n xbins fits in usize")];
@@ -41,14 +41,17 @@ pub fn plot(xs: &[f32], ys: &[f32]) -> Result<(), Box<dyn Error>> {
     for (x,y) in &xsys {
         let xloc = xtrans(*x) as usize;
         let yloc = ytrans(*y) as usize;
-        println!("x,y: {},{} xloc,yloc: {},{}",*x,*y,xloc,yloc);
+        //println!("x,y: {},{} xloc,yloc: {},{}",*x,*y,xloc,yloc);
         data_xbins[xloc].push(yloc);
     }
-    for (x,yvals) in zip(xbincenters,data_xbins) {
+    //for (ibin, yvals) in data_xbins.iter().enumerate() {
+    //    println!("{:10} {:?}",ibin,yvals);
+    //}
+    for (x,yvals) in zip(&xbincenters,&data_xbins) {
         //let mut line = String::from(format_bytes!("{:>10.3} |{:>maxwidth$}",xbinedge," ",maxwidth=maxwidth));
         let mut linevec = vec![' '; maxwidth+1];
         for yval in yvals {
-            linevec[yval] = '*';
+            linevec[*yval] = '*';
         }
         let line: String = linevec.iter().collect();
         println!("{:>10.3} |{}",x,line);
