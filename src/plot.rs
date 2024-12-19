@@ -12,23 +12,46 @@ pub fn plot(xs: &[f32], ys: &[f32]) -> Result<(), Box<dyn Error>> {
     let (xmax,ymax): (f32,f32) = xsys.iter()
                         .fold((0.,0.),|(xmax,ymax): (f32,f32),(x,y)| (xmax.max(*x),ymax.max(*y)));
     let xwidth = xmax-xmin;
-    let yheight = ymax-ymin;
+    let ywidth = ymax-ymin;
+    println!("xmin,xmax: {},{} ymin,ymax: {},{} xwidth,ywidth: {},{}",
+                        xmin,xmax,ymin,ymax,xwidth,ywidth);
 
-    let leftmargin: u32 = 12;
-    let botmargin: u32 = 0;
-    let termwidth = u32::from(termsize::get().unwrap().cols);
-    let termheight = u32::from(termsize::get().unwrap().rows);
+    let leftmargin: usize = 12;
+    let botmargin: usize = 3;
+    let termwidth = usize::from(termsize::get().unwrap().cols);
+    let termheight = usize::from(termsize::get().unwrap().rows);
 
-    let maxwidth = termwidth - leftmargin;
-    let maxheight = termheight - botmargin;
-    let _xtrans = |x: f32| maxwidth as f32/xwidth*x-xmin;
-    let ytrans = |y: f32| maxheight as f32/yheight*y-ymin;
-    for (_x,y) in &xsys {
-        let yloc = ytrans(*y) as usize;
-        println!("{:>10} |{:>y$}","","*",y=yloc);
-    }
+    let maxwidth = termwidth - leftmargin -1;
+    let maxheight = termheight - botmargin -1;
+    println!("maxwidth,maxheight: {},{}",maxwidth,maxheight);
+
+    let xtrans = |x: f32| maxheight as f32/xwidth*(x-xmin);
+    let ytrans = |y: f32| maxwidth as f32/ywidth*(y-ymin);
+    println!("{:>10} {:>10} {:>10} {:>10}","x","y","xtrans","ytrans");
     for (x,y) in &xsys {
-        println!("{:10} {:10}",*x,*y);
+        println!("{:10} {:10} {:10} {:10}",*x,*y,xtrans(*x),ytrans(*y));
+    }
+
+    let xbinwidth: f32 = xwidth/maxheight as f32;
+    let xbincenters: Vec<f32> = (0..maxheight)
+                        .map(|ibin| xmin + (xbinwidth*(ibin as f32+0.5)))
+                        .collect();
+    let mut data_xbins: Vec<Vec<usize>> = vec![vec![];usize::try_from(maxheight+1).expect("n xbins fits in usize")];
+
+    for (x,y) in &xsys {
+        let xloc = xtrans(*x) as usize;
+        let yloc = ytrans(*y) as usize;
+        println!("x,y: {},{} xloc,yloc: {},{}",*x,*y,xloc,yloc);
+        data_xbins[xloc].push(yloc);
+    }
+    for (x,yvals) in zip(xbincenters,data_xbins) {
+        //let mut line = String::from(format_bytes!("{:>10.3} |{:>maxwidth$}",xbinedge," ",maxwidth=maxwidth));
+        let mut linevec = vec![' '; maxwidth+1];
+        for yval in yvals {
+            linevec[yval] = '*';
+        }
+        let line: String = linevec.iter().collect();
+        println!("{:>10.3} |{}",x,line);
     }
     Ok(())
 }
