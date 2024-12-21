@@ -62,7 +62,8 @@ pub fn plot(xs: &[f32], ys: &[f32]) -> Result<(), Box<dyn Error>> {
                                 .collect();
         println!("{:>10.3} │{}",y,line);
     }
-    println!("{:10} └{}","",(0..maxwidth+1).map(|_| "─").collect::<String>());
+    println!("{:10} ├{}┐","",(0..maxwidth).map(|x| if x == maxwidth / 2 {"┬"} else {"─"}).collect::<String>());
+    println!("{:10}  {:<10.3}{:>firsthalfwidth$.3}{xmax:>secondhalfwidth$.3}","",xmin,xmin + xwidth*0.5,firsthalfwidth=(maxwidth / 2)-10,xmax=xmax,secondhalfwidth=(maxwidth/2));
     Ok(())
 }
 
