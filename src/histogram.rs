@@ -47,10 +47,10 @@ impl Histogram {
         for i in 0..self.nbins {
             let count: usize = self.bincontent[i].try_into().unwrap();
             let scaledcount = (count as f32 * bcscalefactor) as usize;
-            let bar: String = std::iter::repeat("X").take(scaledcount).collect();
+            let bar: String = std::iter::repeat("█").take(scaledcount).collect();
             println!("{:>10} |{}",self.binedges[i],bar);
         }
         println!("{:>10}",self.binedges[self.nbins]);
-        println!("Each X is {} entries; right edge is {} entries",1./bcscalefactor,(histwidth as f32) * bcscalefactor)
+        println!("Each █ is {} entries; right edge is {} entries",1./bcscalefactor,(histwidth as f32) * bcscalefactor)
     }
 }

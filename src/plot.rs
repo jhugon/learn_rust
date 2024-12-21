@@ -54,14 +54,15 @@ pub fn plot(xs: &[f32], ys: &[f32]) -> Result<(), Box<dyn Error>> {
         let line: String = (0..maxwidth+1)
                                 .map(
                                     |x| if xvals.iter().any(|matchx| *matchx == x) {
-                                            '*'
+                                            '●'
                                         } else {
                                             ' '
                                         }
                                 )
                                 .collect();
-        println!("{:>10.3} |{}",y,line);
+        println!("{:>10.3} │{}",y,line);
     }
+    println!("{:10} └{}","",(0..maxwidth+1).map(|_| "─").collect::<String>());
     Ok(())
 }
 
