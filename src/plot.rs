@@ -36,14 +36,17 @@ pub fn plot(xs: &[f32], ys: &[f32]) -> Result<(), Box<dyn Error>> {
     let xbincenters: Vec<f32> = (0..maxheight+1)
                         .map(|ibin| xmin + (xbinwidth*(ibin as f32+0.5)))
                         .collect();
-    let mut data_xbins: Vec<Vec<usize>> = vec![vec![];usize::try_from(maxheight+1).expect("n xbins fits in usize")];
+    let data_xbins: Vec<Vec<usize>> = { // put mut var in its own scope to keep it here
+        let mut data_mut = vec![vec![];usize::try_from(maxheight+1).expect("n xbins fits in usize")];
 
-    for (x,y) in &xsys {
-        let xloc = xtrans(*x) as usize;
-        let yloc = ytrans(*y) as usize;
-        //println!("x,y: {},{} xloc,yloc: {},{}",*x,*y,xloc,yloc);
-        data_xbins[xloc].push(yloc);
-    }
+        for (x,y) in &xsys {
+            let xloc = xtrans(*x) as usize;
+            let yloc = ytrans(*y) as usize;
+            //println!("x,y: {},{} xloc,yloc: {},{}",*x,*y,xloc,yloc);
+            data_mut[xloc].push(yloc);
+        }
+        data_mut
+    };
     //for (ibin, yvals) in data_xbins.iter().enumerate() {
     //    println!("{:10} {:?}",ibin,yvals);
     //}
