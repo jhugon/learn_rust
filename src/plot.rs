@@ -51,12 +51,15 @@ pub fn plot(xs: &[f32], ys: &[f32]) -> Result<(), Box<dyn Error>> {
     //    println!("{:10} {:?}",ibin,yvals);
     //}
     for (x,yvals) in zip(&xbincenters,&data_xbins) {
-        //let mut line = String::from(format_bytes!("{:>10.3} |{:>maxwidth$}",xbinedge," ",maxwidth=maxwidth));
-        let mut linevec = vec![' '; maxwidth+1];
-        for yval in yvals {
-            linevec[*yval] = '*';
-        }
-        let line: String = linevec.iter().collect();
+        let line: String = (0..maxwidth+1)
+                                .map(
+                                    |y| if yvals.iter().any(|matchy| *matchy == y) {
+                                            '*'
+                                        } else {
+                                            ' '
+                                        }
+                                )
+                                .collect();
         println!("{:>10.3} |{}",x,line);
     }
     Ok(())
