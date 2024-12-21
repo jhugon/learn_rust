@@ -25,42 +25,42 @@ pub fn plot(xs: &[f32], ys: &[f32]) -> Result<(), Box<dyn Error>> {
     let maxheight = termheight - botmargin -1;
     println!("maxwidth,maxheight: {},{}",maxwidth,maxheight);
 
-    let xtrans = |x: f32| maxheight as f32/xwidth*(x-xmin);
-    let ytrans = |y: f32| maxwidth as f32/ywidth*(y-ymin);
+    let xtrans = |x: f32| maxwidth as f32/xwidth*(x-xmin);
+    let ytrans = |y: f32| maxheight as f32/ywidth*(y-ymin);
     println!("{:>10} {:>10} {:>10} {:>10}","x","y","xtrans","ytrans");
     for (x,y) in &xsys {
         println!("{:10} {:10} {:10} {:10}",*x,*y,xtrans(*x),ytrans(*y));
     }
 
-    let xbinwidth: f32 = xwidth/maxheight as f32;
-    let xbincenters: Vec<f32> = (0..maxheight+1)
-                        .map(|ibin| xmin + (xbinwidth*(ibin as f32+0.5)))
+    let ybinwidth: f32 = ywidth/maxheight as f32;
+    let ybincenters: Vec<f32> = (0..maxheight+1)
+                        .map(|ibin| ymin + (ybinwidth*(ibin as f32+0.5)))
                         .collect();
-    let data_xbins: Vec<Vec<usize>> = { // put mut var in its own scope to keep it here
-        let mut data_mut = vec![vec![];usize::try_from(maxheight+1).expect("n xbins fits in usize")];
+    let data_ybins: Vec<Vec<usize>> = { // put mut var in its own scope to keep it here
+        let mut data_mut = vec![vec![];usize::try_from(maxheight+1).expect("n ybins fits in usize")];
 
         for (x,y) in &xsys {
             let xloc = xtrans(*x) as usize;
             let yloc = ytrans(*y) as usize;
             //println!("x,y: {},{} xloc,yloc: {},{}",*x,*y,xloc,yloc);
-            data_mut[xloc].push(yloc);
+            data_mut[yloc].push(xloc);
         }
         data_mut
     };
     //for (ibin, yvals) in data_xbins.iter().enumerate() {
     //    println!("{:10} {:?}",ibin,yvals);
     //}
-    for (x,yvals) in zip(&xbincenters,&data_xbins) {
+    for (y,xvals) in zip(&ybincenters,&data_ybins).rev() {
         let line: String = (0..maxwidth+1)
                                 .map(
-                                    |y| if yvals.iter().any(|matchy| *matchy == y) {
+                                    |x| if xvals.iter().any(|matchx| *matchx == x) {
                                             '*'
                                         } else {
                                             ' '
                                         }
                                 )
                                 .collect();
-        println!("{:>10.3} |{}",x,line);
+        println!("{:>10.3} |{}",y,line);
     }
     Ok(())
 }
