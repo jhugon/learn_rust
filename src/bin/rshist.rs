@@ -1,6 +1,6 @@
 use clap::Parser;
 use patharg::InputArg;
-use crate::Histogram;
+use learn_rust::Histogram;
 
 /// Make a histogram from input data
 ///
