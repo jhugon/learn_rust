@@ -1,20 +1,45 @@
+use unicode_segmentation::UnicodeSegmentation;
 
-const LEFTMARGIN: usize = 12;
-
-/// Draws the bottom x-axis line with a few ticks
-pub fn drawxaxis(axesmeta: &AxesMeta) -> () {
+/// Draws the bottom x-axis line with a few labeled ticks
+pub fn drawxaxis(axesmeta: &AxesMeta) -> Vec<String> {
     let xmin = axesmeta.dataminmax.xmin;
     let xmax = axesmeta.dataminmax.xmax;
     let xhalf = (xmax+xmin)*0.5;
-    let axiswidth = termwidth() - LEFTMARGIN-1;
+    let axiswidth = axesmeta.axeswidth();
     let halfaxiswidth = axiswidth / 2;
-    println!("{:10} ├{}┐","",(0..axiswidth).map(|x| if x == halfaxiswidth {"┬"} else {"─"}).collect::<String>());
-    println!("{:10}  {xmin:<10.3}{xhalf:>firsthalfwidth$.3}{xmax:>secondhalfwidth$.3}","",xmin=xmin,xhalf=xhalf,firsthalfwidth=halfaxiswidth-10,xmax=xmax,secondhalfwidth=halfaxiswidth);
+    let leftmargin = axesmeta.leftmargin;
+    let linetext: String = (0..axiswidth-1)
+                            .map(|x| if x == halfaxiswidth {"┬"} else {"─"})
+                            .collect();
+    let ylabelwidth = leftmargin-2;
+    let result = vec![
+        format!("{:>ylabelwidth$} ├{linetext}┐",""),
+        format!(
+            "{:>ylabelwidth$}  {xmin:<10.3}{xhalf:>firsthalfwidth$.3}{xmax:>secondhalfwidth$.3}",
+            "",
+            ylabelwidth=ylabelwidth,
+            xmin=xmin,
+            xhalf=xhalf,
+            firsthalfwidth=halfaxiswidth-10,
+            xmax=xmax,
+            secondhalfwidth=halfaxiswidth
+        )
+    ];
+    result
 }
 
-/// Get the terminal x-width
-fn termwidth() -> usize {
-    usize::from(termsize::get().unwrap().cols)
+/// Draws the left y-axis scale and bar
+pub fn drawyaxis(axesmeta: &AxesMeta) -> Vec<String> {
+    let leftmargin = axesmeta.leftmargin;
+    let numwidth = leftmargin - 2;
+    let ybincenters = axesmeta.ybincenters();
+    let result: Vec<String> = ybincenters.iter().rev()
+                    .map(|y| format!("{:>numwidth$.3} │",y,numwidth=numwidth))
+                    .collect();
+    for line in &result {
+        assert!(line.graphemes(true).count() == leftmargin);
+    }
+    result
 }
 
 //////////////////////////////////////////////////////////////
@@ -30,11 +55,11 @@ pub struct AxesMeta {
 
 impl AxesMeta {
     pub fn xdatatoaxes(&self, x: &f32) -> usize {
-        let resultfloat = self.axeswidth() as f32/self.dataminmax.xwidth()*(x-self.dataminmax.xmin);
+        let resultfloat = (self.axeswidth() as f32-1.)/self.dataminmax.xwidth()*(x-self.dataminmax.xmin);
         resultfloat.floor() as usize
     }
     pub fn ydatatoaxes(&self, y: &f32) -> usize {
-        let resultfloat = self.axesheight() as f32/self.dataminmax.ywidth()*(y-self.dataminmax.ymin);
+        let resultfloat = (self.axesheight() as f32-1.)/self.dataminmax.ywidth()*(y-self.dataminmax.ymin);
         resultfloat.floor() as usize
     }
     pub fn axeswidth(&self) -> usize {
@@ -50,12 +75,12 @@ impl AxesMeta {
         self.dataminmax.ywidth()/self.axesheight() as f32
     }
     pub fn xbincenters(&self) -> Vec<f32> {
-        (0..self.axeswidth()+1)
+        (0..self.axeswidth())
             .map(|ibin| self.dataminmax.xmin + (self.xbinwidth()*(ibin as f32+0.5)))
             .collect()
     }
     pub fn ybincenters(&self) -> Vec<f32> {
-        (0..self.axesheight()+1)
+        (0..self.axesheight())
             .map(|ibin| self.dataminmax.ymin + (self.ybinwidth()*(ibin as f32+0.5)))
             .collect()
     }

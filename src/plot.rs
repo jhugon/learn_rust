@@ -1,6 +1,7 @@
 use std::iter::zip;
 use std::error::Error;
 use crate::plotutils::*;
+use unicode_segmentation::UnicodeSegmentation;
 
 /// Plots in the terminal
 ///
@@ -20,10 +21,16 @@ pub fn plot(xs: &[f32], ys: &[f32]) -> Result<(), Box<dyn Error>> {
         botmargin: botmargin,
     };
 
-    let plotteddata = drawdata(&xsys,&axes);
-    //println!("{:10} ├{}┐","",(0..maxwidth).map(|x| if x == maxwidth / 2 {"┬"} else {"─"}).collect::<String>());
-    //println!("{:10}  {:<10.3}{:>firsthalfwidth$.3}{xmax:>secondhalfwidth$.3}","",xmin,xmin + xwidth*0.5,firsthalfwidth=(maxwidth / 2)-10,xmax=xmax,secondhalfwidth=(maxwidth/2));
-    drawxaxis(&axes);
+    let yaxistext = drawyaxis(&axes);
+    let plotteddatatext = drawdata(&xsys,&axes);
+    let xaxistext = drawxaxis(&axes);
+    let resultexceptxaxis: Vec<String> = zip(yaxistext,plotteddatatext).map(|(t_ax,t_data)| format!("{t_ax}{t_data}")).collect();
+    //let result: Vec<&String> = resultexceptxaxis.iter().chain(&xaxistext).collect();
+    let result = resultexceptxaxis.iter().chain(&xaxistext);
+    for line in result {
+        assert!(line.graphemes(true).count() == termwidth);
+        println!("{}",line);
+    }
     Ok(())
 }
 
@@ -41,7 +48,6 @@ fn validate_input(xs: &[f32], ys: &[f32]) -> Vec<(f32,f32)> {
 fn drawdata(xsys: &[(f32,f32)], axes: &AxesMeta) -> Vec<String> {
     let mut result = vec!();
 
-    let ybincenters = axes.ybincenters();
     let data_ybins: Vec<Vec<usize>> = { // put mut var in its own scope to keep it here
         let mut data_mut = vec![vec![];axes.axesheight()];
 
@@ -52,8 +58,8 @@ fn drawdata(xsys: &[(f32,f32)], axes: &AxesMeta) -> Vec<String> {
         }
         data_mut
     };
-    for (y,xvals) in zip(&ybincenters,&data_ybins).rev() {
-        let line: String = (0..axes.axeswidth()+1)
+    for xvals in data_ybins.iter().rev() {
+        let line: String = (0..axes.axeswidth())
                                 .map(
                                     |x| if xvals.iter().any(|matchx| *matchx == x) {
                                             '●'
@@ -62,7 +68,8 @@ fn drawdata(xsys: &[(f32,f32)], axes: &AxesMeta) -> Vec<String> {
                                         }
                                 )
                                 .collect();
-        result.push(format!("{:>10.3} │{}",y,line));
+        assert!(line.graphemes(true).count() == axes.axeswidth());
+        result.push(line);
     }
     result
 }
