@@ -1,8 +1,8 @@
 use clap::Parser;
 use patharg::InputArg;
-use std::error::Error;
+use std::fmt::Error;
 use learn_rust::plot;
-//use regex::Regex;
+use regex::Regex;
 
 /// Plots data from input in form x y
 ///
@@ -10,6 +10,18 @@ use learn_rust::plot;
 struct Arguments {
     #[arg(default_value_t)]
     infile: InputArg,
+}
+
+fn xyparseline(line: &str) -> Result<(f32,f32), Box<dyn std::error::Error>> {
+    let re = Regex::new(r"^\s*(-??\d+(?:\.\d*))\s+(-??\d+(?:\.\d*))\s*$")?;
+    let captureopt = re.captures(line);
+    let (xnum, ynum) = if let Some(capture) = captureopt {
+        let (_, [xstr,ystr]) = capture.extract();
+        (xstr.parse()?, ystr.parse()?)
+    } else {
+        return Error(format!("Couldn't parse x and y in {}",line));
+    };
+    Ok((xnum,ynum))
 }
 
 //fn xyinputparse(infile: InputArg) -> Result<(Vec<f32>, Vec<f32>)> {
@@ -27,9 +39,13 @@ struct Arguments {
 //    Ok((vec!(),vec!()))
 //}
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let _args = Arguments::parse();
-    //let (xs, ys) = xyinputparse(args.infile)?;
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = Arguments::parse();
+    let infile = args.infile;
+    for line in infile.lines()? {
+        let (_x,_y) = xyparseline(&line?)?;
+    }
+    //let (xs, ys) = xyinputparse()?;
     let xs = vec![0.,1.,2.,2.,7.,4.,-2.];
     let ys = vec![5.,8.,1.,6.,0.,-4.,10.];
     plot(&xs,&ys)?;
