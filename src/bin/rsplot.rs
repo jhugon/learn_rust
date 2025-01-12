@@ -22,7 +22,6 @@ fn xyparseline(line: &str) -> Result<(f32,f32), Box<dyn Error>> {
     } else {
         return Err(anyhow!("Couldn't parse line \"{}\", it should be two numbers seperated by whitespace",line).into());
     };
-    println!("\"{}\" parsed to {} and {}",line,xnum,ynum);
     Ok((xnum,ynum))
 }
 
@@ -35,9 +34,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let xsys: Vec<(f32,f32)> = infile.lines()?.map(|line| xyparseline(&line?)).collect::<Result<Vec<(f32,f32)>,Box<dyn Error>>>()?;
     let xs: Vec<f32>  = xsys.iter().map(|(x,_)| *x).collect();
     let ys: Vec<f32> = xsys.iter().map(|(_,y)| *y).collect();
-    println!("{:?}",xsys);
-    println!("{:?}",xs);
-    println!("{:?}",ys);
     plot(&xs,&ys)?;
     Ok(())
 }
