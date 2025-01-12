@@ -62,7 +62,7 @@ impl Histogram {
                     .collect();
         let result = resultexceptxaxis.iter().chain(&xaxistext);
         for line in result {
-            assert!(line.graphemes(true).count() == termwidth);
+            assert!(line.graphemes(true).count() <= termwidth);
             println!("{}",line);
         }
     }
@@ -82,6 +82,10 @@ impl Histogram {
                         .map(|count| std::iter::repeat("█")
                         .take(count)
                         .collect());
-        bars.collect()
+        let result: Vec<String> = bars.collect();
+        for line in &result {
+            assert!(line.graphemes(true).count() <= histwidth);
+        }
+        result
     }
 }
