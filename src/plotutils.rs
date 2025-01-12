@@ -111,7 +111,7 @@ impl DataMinMax {
         let ymin = binedges[0];
         let ymax = *binedges.last().unwrap();
         let xmin = 0.;
-        let xmax = bincontent.iter().fold(0,|ymax, y| ymax.max(*y)) as f32;
+        let xmax = *bincontent.iter().max().unwrap() as f32;
         DataMinMax { xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax}
     }
 

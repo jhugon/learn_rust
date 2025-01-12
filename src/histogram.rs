@@ -44,18 +44,20 @@ impl Histogram {
         let termwidth = usize::from(termsize::get().unwrap().cols);
         let termheight = usize::from(termsize::get().unwrap().rows);
 
-        let mut axes = AxesMeta {
+        let axes = AxesMeta {
             dataminmax: DataMinMax::fromhistogram(&self.binedges,&self.bincontent),
             termwidth: termwidth,
             termheight: termheight,
             leftmargin: leftmargin,
             botmargin: botmargin,
         };
-        axes.dataminmax.xmax = 1./self.scalefactor(&axes)*axes.axeswidth() as f32;
 
         let yaxistext = self.drawyaxis(&axes);
         let plotteddatatext = self.drawdata(&axes);
         let xaxistext = drawxaxis(&axes);
+        println!("plotteddatatext: {}",plotteddatatext.len());
+        println!("yaxistext: {}",yaxistext.len());
+        assert!(plotteddatatext.len() == yaxistext.len());
         let resultexceptxaxis: Vec<String> = zip(yaxistext,plotteddatatext)
                     .map(
                         |(t_ax,t_data)| format!("{t_ax}{t_data}")
@@ -68,11 +70,11 @@ impl Histogram {
         }
     }
     fn drawdata(&self,axes: &AxesMeta) -> Vec<String> {
-        let scalefactor = self.scalefactor(axes);
-
         let counts = self.bincontent.iter();
         let scaledcount = counts
-                            .map(|count| (*count as f32 * scalefactor) as usize);
+                            .map(
+                                |count| axes.xdatatoaxes(&(*count as f32))
+                                );
         let bars = scaledcount
                         .map(|count| std::iter::repeat("█")
                         .take(count)
@@ -82,16 +84,6 @@ impl Histogram {
             assert!(line.graphemes(true).count() <= axes.axeswidth());
         }
         result
-    }
-    fn scalefactor(&self,axes: &AxesMeta) -> f32 {
-        let histwidth = axes.axeswidth();
-        let maxbincontent = *self.bincontent.iter().max().unwrap();
-        let scalefactor: f32 = if maxbincontent > histwidth {
-            histwidth as f32 / maxbincontent as f32
-        } else {
-            1.
-        };
-        scalefactor
     }
     fn drawyaxis(&self, axes: &AxesMeta) -> Vec<String> {
         let leftmargin = axes.leftmargin;
