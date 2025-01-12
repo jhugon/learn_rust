@@ -106,12 +106,13 @@ impl DataMinMax {
         DataMinMax { xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax }
     }
 
+    /// Note x axis is bincontent and y axis is binedges
     pub fn fromhistogram(binedges: &[f32], bincontent: &[usize]) -> DataMinMax {
-        let xmin = binedges[0];
-        let xmax = binedges.last().unwrap();
-        let ymin = 0.;
-        let ymax = bincontent.iter().fold(0,|ymax, y| ymax.max(*y)) as f32;
-        DataMinMax { xmin: xmin, xmax: *xmax, ymin: ymin, ymax: ymax}
+        let ymin = binedges[0];
+        let ymax = *binedges.last().unwrap();
+        let xmin = 0.;
+        let xmax = bincontent.iter().fold(0,|ymax, y| ymax.max(*y)) as f32;
+        DataMinMax { xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax}
     }
 
     pub fn xwidth(&self) -> f32 {

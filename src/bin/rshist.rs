@@ -35,4 +35,3 @@ fn main() -> std::io::Result<()> {
     hist.print();
     Ok(())
 }
-

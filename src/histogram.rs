@@ -44,15 +44,16 @@ impl Histogram {
         let termwidth = usize::from(termsize::get().unwrap().cols);
         let termheight = usize::from(termsize::get().unwrap().rows);
 
-        let axes = AxesMeta {
+        let mut axes = AxesMeta {
             dataminmax: DataMinMax::fromhistogram(&self.binedges,&self.bincontent),
             termwidth: termwidth,
             termheight: termheight,
             leftmargin: leftmargin,
             botmargin: botmargin,
         };
+        axes.dataminmax.xmax = 1./self.scalefactor(&axes)*axes.axeswidth() as f32;
 
-        let yaxistext = drawyaxis(&axes);
+        let yaxistext = self.drawyaxis(&axes);
         let plotteddatatext = self.drawdata(&axes);
         let xaxistext = drawxaxis(&axes);
         let resultexceptxaxis: Vec<String> = zip(yaxistext,plotteddatatext)
@@ -67,13 +68,7 @@ impl Histogram {
         }
     }
     fn drawdata(&self,axes: &AxesMeta) -> Vec<String> {
-        let maxbincontent = *self.bincontent.iter().max().unwrap();
-        let histwidth = axes.axeswidth();
-        let scalefactor: f32 = if maxbincontent > histwidth {
-            histwidth as f32 / maxbincontent as f32
-        } else {
-            1.
-        };
+        let scalefactor = self.scalefactor(axes);
 
         let counts = self.bincontent.iter();
         let scaledcount = counts
@@ -84,7 +79,31 @@ impl Histogram {
                         .collect());
         let result: Vec<String> = bars.collect();
         for line in &result {
-            assert!(line.graphemes(true).count() <= histwidth);
+            assert!(line.graphemes(true).count() <= axes.axeswidth());
+        }
+        result
+    }
+    fn scalefactor(&self,axes: &AxesMeta) -> f32 {
+        let histwidth = axes.axeswidth();
+        let maxbincontent = *self.bincontent.iter().max().unwrap();
+        let scalefactor: f32 = if maxbincontent > histwidth {
+            histwidth as f32 / maxbincontent as f32
+        } else {
+            1.
+        };
+        scalefactor
+    }
+    fn drawyaxis(&self, axes: &AxesMeta) -> Vec<String> {
+        let leftmargin = axes.leftmargin;
+        let numwidth = leftmargin - 2;
+        let result: Vec<String> = self.binedges
+                        .iter()
+                        .rev()
+                        .skip(1)
+                        .map(|y| format!("{:>numwidth$.3} │",y))
+                        .collect();
+        for line in &result {
+            assert!(line.graphemes(true).count() == leftmargin);
         }
         result
     }
