@@ -1,8 +1,11 @@
+use std::iter::zip;
+use crate::plotutils::*;
+use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug)]
 pub struct Histogram {
     nbins: usize,
-    bincontent: Vec<u64>,
+    bincontent: Vec<usize>,
     binedges: Vec<f32>,
 }
 
@@ -18,7 +21,9 @@ impl Histogram {
     pub fn new(nbins: usize,xmin: f32, xmax: f32) -> Self {
         let xwidth = xmax - xmin;
         let xbinwidth: f32 = xwidth/nbins as f32;
-        let binedges = (0..nbins+1).map(|ibin| xmin + xbinwidth*ibin as f32).collect();
+        let binedges = (0..nbins+1)
+                        .map(|ibin| xmin + xbinwidth*ibin as f32)
+                        .collect();
         let bincontent = vec![0;nbins];
         Self{nbins,bincontent,binedges}
     }
@@ -35,22 +40,48 @@ impl Histogram {
     }
     pub fn print(&self) -> () {
         let leftmargin: usize = 12;
+        let botmargin: usize = 3;
         let termwidth = usize::from(termsize::get().unwrap().cols);
-        let histwidth = termwidth - leftmargin;
-        let maxbincontent_u64ref: &u64 = self.bincontent.iter().max().unwrap();
-        let maxbincontent: usize = (*maxbincontent_u64ref).try_into().unwrap();
-        let bcscalefactor: f32 = if maxbincontent > histwidth {
+        let termheight = usize::from(termsize::get().unwrap().rows);
+
+        let axes = AxesMeta {
+            dataminmax: DataMinMax::fromhistogram(&self.binedges,&self.bincontent),
+            termwidth: termwidth,
+            termheight: termheight,
+            leftmargin: leftmargin,
+            botmargin: botmargin,
+        };
+
+        let yaxistext = drawyaxis(&axes);
+        let plotteddatatext = self.drawdata(&axes);
+        let xaxistext = drawxaxis(&axes);
+        let resultexceptxaxis: Vec<String> = zip(yaxistext,plotteddatatext)
+                    .map(
+                        |(t_ax,t_data)| format!("{t_ax}{t_data}")
+                        )
+                    .collect();
+        let result = resultexceptxaxis.iter().chain(&xaxistext);
+        for line in result {
+            assert!(line.graphemes(true).count() == termwidth);
+            println!("{}",line);
+        }
+    }
+    fn drawdata(&self,axes: &AxesMeta) -> Vec<String> {
+        let maxbincontent = *self.bincontent.iter().max().unwrap();
+        let histwidth = axes.axeswidth();
+        let scalefactor: f32 = if maxbincontent > histwidth {
             histwidth as f32 / maxbincontent as f32
         } else {
             1.
         };
-        for i in 0..self.nbins {
-            let count: usize = self.bincontent[i].try_into().unwrap();
-            let scaledcount = (count as f32 * bcscalefactor) as usize;
-            let bar: String = std::iter::repeat("█").take(scaledcount).collect();
-            println!("{:>10} |{}",self.binedges[i],bar);
-        }
-        println!("{:>10}",self.binedges[self.nbins]);
-        println!("Each █ is {} entries; right edge is {} entries",1./bcscalefactor,(histwidth as f32) * bcscalefactor)
+
+        let counts = self.bincontent.iter();
+        let scaledcount = counts
+                            .map(|count| (*count as f32 * scalefactor) as usize);
+        let bars = scaledcount
+                        .map(|count| std::iter::repeat("█")
+                        .take(count)
+                        .collect());
+        bars.collect()
     }
 }

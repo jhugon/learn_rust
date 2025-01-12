@@ -25,7 +25,6 @@ pub fn plot(xs: &[f32], ys: &[f32]) -> Result<(), Box<dyn Error>> {
     let plotteddatatext = drawdata(&xsys,&axes);
     let xaxistext = drawxaxis(&axes);
     let resultexceptxaxis: Vec<String> = zip(yaxistext,plotteddatatext).map(|(t_ax,t_data)| format!("{t_ax}{t_data}")).collect();
-    //let result: Vec<&String> = resultexceptxaxis.iter().chain(&xaxistext).collect();
     let result = resultexceptxaxis.iter().chain(&xaxistext);
     for line in result {
         assert!(line.graphemes(true).count() == termwidth);
