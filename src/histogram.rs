@@ -31,7 +31,7 @@ impl Histogram {
             binedges,
         }
     }
-    pub fn fill(&mut self, x: f32) -> () {
+    pub fn fill(&mut self, x: f32) {
         if x < self.binedges[0] {
             return;
         }
@@ -42,7 +42,7 @@ impl Histogram {
             }
         }
     }
-    pub fn print(&self) -> () {
+    pub fn print(&self) {
         let leftmargin: usize = 12;
         let botmargin: usize = 3;
         let termwidth = usize::from(termsize::get().unwrap().cols);
@@ -50,10 +50,10 @@ impl Histogram {
 
         let axes = AxesMeta {
             dataminmax: DataMinMax::fromhistogram(&self.binedges, &self.bincontent),
-            termwidth: termwidth,
-            termheight: termheight,
-            leftmargin: leftmargin,
-            botmargin: botmargin,
+            termwidth,
+            termheight,
+            leftmargin,
+            botmargin,
         };
 
         let yaxistext = self.drawyaxis(&axes);
@@ -74,7 +74,7 @@ impl Histogram {
     fn drawdata(&self, axes: &AxesMeta) -> Vec<String> {
         let counts = self.bincontent.iter();
         let scaledcount = counts.map(|count| axes.xdatatoaxes(&(*count as f32)));
-        let bars = scaledcount.map(|count| std::iter::repeat("█").take(count).collect());
+        let bars = scaledcount.map(|count| "█".repeat(count));
         let result: Vec<String> = bars.collect();
         for line in &result {
             assert!(line.graphemes(true).count() <= axes.axeswidth());

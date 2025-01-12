@@ -113,10 +113,10 @@ impl DataMinMax {
                 (xmax.max(*x), ymax.max(*y))
             });
         DataMinMax {
-            xmin: xmin,
-            xmax: xmax,
-            ymin: ymin,
-            ymax: ymax,
+            xmin,
+            xmax,
+            ymin,
+            ymax,
         }
     }
 
@@ -127,10 +127,10 @@ impl DataMinMax {
         let xmin = 0.;
         let xmax = *bincontent.iter().max().unwrap() as f32;
         DataMinMax {
-            xmin: xmin,
-            xmax: xmax,
-            ymin: ymin,
-            ymax: ymax,
+            xmin,
+            xmax,
+            ymin,
+            ymax,
         }
     }
 

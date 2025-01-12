@@ -15,10 +15,10 @@ pub fn plot(xs: &[f32], ys: &[f32]) -> Result<(), Box<dyn Error>> {
     let xsys = validate_input(xs, ys);
     let axes = AxesMeta {
         dataminmax: DataMinMax::find(&xsys),
-        termwidth: termwidth,
-        termheight: termheight,
-        leftmargin: leftmargin,
-        botmargin: botmargin,
+        termwidth,
+        termheight,
+        leftmargin,
+        botmargin,
     };
 
     let yaxistext = drawyaxis(&axes);
