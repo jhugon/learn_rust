@@ -27,3 +27,4 @@ Cargo.lock
 # Added by Justin
 .*.swp
 .*~
+*.txt
