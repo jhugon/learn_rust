@@ -1,7 +1,7 @@
 use clap::Parser;
+use learn_rust::plot;
 use patharg::InputArg;
 use std::error::Error;
-use learn_rust::plot;
 //use regex::Regex;
 
 /// Plots data from input in form x y
@@ -30,8 +30,8 @@ struct Arguments {
 fn main() -> Result<(), Box<dyn Error>> {
     let _args = Arguments::parse();
     //let (xs, ys) = xyinputparse(args.infile)?;
-    let xs = vec![0.,1.,2.,2.,7.,4.,-2.];
-    let ys = vec![5.,8.,1.,6.,0.,-4.,10.];
-    plot(&xs,&ys)?;
+    let xs = vec![0., 1., 2., 2., 7., 4., -2.];
+    let ys = vec![5., 8., 1., 6., 0., -4., 10.];
+    plot(&xs, &ys)?;
     Ok(())
 }

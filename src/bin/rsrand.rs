@@ -1,8 +1,8 @@
 use clap::Parser;
 use clap::ValueEnum;
 use patharg::OutputArg;
-use std::io::Write;
 use rand::prelude::*;
+use std::io::Write;
 
 /// Generate random numbers
 ///
@@ -40,7 +40,7 @@ fn main() -> std::io::Result<()> {
 
     // Statistical distributions
     let normal = rand_distr::StandardNormal;
-    let uniform = rand_distr::Uniform::new(0.,1.);
+    let uniform = rand_distr::Uniform::new(0., 1.);
     let exponential = rand_distr::Exp1;
 
     for _ in 0..args.nsamples {
@@ -50,7 +50,7 @@ fn main() -> std::io::Result<()> {
             Distribution::Uniform => thread_rng().sample(uniform),
             Distribution::Exponential => thread_rng().sample(exponential),
         };
-        writeln!(&mut outfile,"{}",val)?;
+        writeln!(&mut outfile, "{}", val)?;
     }
     Ok(())
 }

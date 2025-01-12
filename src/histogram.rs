@@ -1,5 +1,5 @@
-use std::iter::zip;
 use crate::plotutils::*;
+use std::iter::zip;
 use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug)]
@@ -18,23 +18,27 @@ impl Histogram {
     //    let bincontent = vec![0;nbins];
     //    Self{nbins,bincontent,binedges}
     //}
-    pub fn new(nbins: usize,xmin: f32, xmax: f32) -> Self {
+    pub fn new(nbins: usize, xmin: f32, xmax: f32) -> Self {
         let xwidth = xmax - xmin;
-        let xbinwidth: f32 = xwidth/nbins as f32;
-        let binedges = (0..nbins+1)
-                        .map(|ibin| xmin + xbinwidth*ibin as f32)
-                        .collect();
-        let bincontent = vec![0;nbins];
-        Self{nbins,bincontent,binedges}
+        let xbinwidth: f32 = xwidth / nbins as f32;
+        let binedges = (0..nbins + 1)
+            .map(|ibin| xmin + xbinwidth * ibin as f32)
+            .collect();
+        let bincontent = vec![0; nbins];
+        Self {
+            nbins,
+            bincontent,
+            binedges,
+        }
     }
-    pub fn fill(& mut self, x: f32) -> () {
+    pub fn fill(&mut self, x: f32) -> () {
         if x < self.binedges[0] {
-            return
+            return;
         }
         for i in 0..self.nbins {
-            if x < self.binedges[i+1] {
+            if x < self.binedges[i + 1] {
                 self.bincontent[i] += 1;
-                return
+                return;
             }
         }
     }
@@ -45,7 +49,7 @@ impl Histogram {
         let termheight = usize::from(termsize::get().unwrap().rows);
 
         let axes = AxesMeta {
-            dataminmax: DataMinMax::fromhistogram(&self.binedges,&self.bincontent),
+            dataminmax: DataMinMax::fromhistogram(&self.binedges, &self.bincontent),
             termwidth: termwidth,
             termheight: termheight,
             leftmargin: leftmargin,
@@ -55,30 +59,22 @@ impl Histogram {
         let yaxistext = self.drawyaxis(&axes);
         let plotteddatatext = self.drawdata(&axes);
         let xaxistext = drawxaxis(&axes);
-        println!("plotteddatatext: {}",plotteddatatext.len());
-        println!("yaxistext: {}",yaxistext.len());
+        println!("plotteddatatext: {}", plotteddatatext.len());
+        println!("yaxistext: {}", yaxistext.len());
         assert!(plotteddatatext.len() == yaxistext.len());
-        let resultexceptxaxis: Vec<String> = zip(yaxistext,plotteddatatext)
-                    .map(
-                        |(t_ax,t_data)| format!("{t_ax}{t_data}")
-                        )
-                    .collect();
+        let resultexceptxaxis: Vec<String> = zip(yaxistext, plotteddatatext)
+            .map(|(t_ax, t_data)| format!("{t_ax}{t_data}"))
+            .collect();
         let result = resultexceptxaxis.iter().chain(&xaxistext);
         for line in result {
             assert!(line.graphemes(true).count() <= termwidth);
-            println!("{}",line);
+            println!("{}", line);
         }
     }
-    fn drawdata(&self,axes: &AxesMeta) -> Vec<String> {
+    fn drawdata(&self, axes: &AxesMeta) -> Vec<String> {
         let counts = self.bincontent.iter();
-        let scaledcount = counts
-                            .map(
-                                |count| axes.xdatatoaxes(&(*count as f32))
-                                );
-        let bars = scaledcount
-                        .map(|count| std::iter::repeat("█")
-                        .take(count)
-                        .collect());
+        let scaledcount = counts.map(|count| axes.xdatatoaxes(&(*count as f32)));
+        let bars = scaledcount.map(|count| std::iter::repeat("█").take(count).collect());
         let result: Vec<String> = bars.collect();
         for line in &result {
             assert!(line.graphemes(true).count() <= axes.axeswidth());
@@ -88,12 +84,13 @@ impl Histogram {
     fn drawyaxis(&self, axes: &AxesMeta) -> Vec<String> {
         let leftmargin = axes.leftmargin;
         let numwidth = leftmargin - 2;
-        let result: Vec<String> = self.binedges
-                        .iter()
-                        .rev()
-                        .skip(1)
-                        .map(|y| format!("{:>numwidth$.3} │",y))
-                        .collect();
+        let result: Vec<String> = self
+            .binedges
+            .iter()
+            .rev()
+            .skip(1)
+            .map(|y| format!("{:>numwidth$.3} │", y))
+            .collect();
         for line in &result {
             assert!(line.graphemes(true).count() == leftmargin);
         }
